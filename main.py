@@ -2,6 +2,8 @@ import pandas as pd
 from geopy import distance
 import time
 import numpy as np
+import random
+from numba import jit, jit_module
 
 def main():
     pass
@@ -15,6 +17,7 @@ def import_data():
 
 
 # function to find the partition position
+@jit(nopython=True)
 def partition(array, low, high):
 
   # choose the rightmost element as pivot
@@ -41,6 +44,7 @@ def partition(array, low, high):
   return i + 1
 
 # function to perform quicksort
+@jit(nopython=True)
 def quickSort(array, low, high):
   if low < high:
 
@@ -54,6 +58,11 @@ def quickSort(array, low, high):
 
     # recursive call on the right of pivot
     quickSort(array, pi + 1, high)
+
+
+def find_nearest(lat, lon):
+    print(lon, end=' ')
+    #return distance.distance((tuple(lat), tuple(lon)))
 
 
 
@@ -77,27 +86,35 @@ if __name__ == '__main__':
     
     #data.insert(6, "Distance", 0)
     #print(data)
-    print(tuple(data["coordonnees_gps"].values[0].split(',')))
+    #print(tuple(data["coordonnees_gps"].values[0].split(',')))
     #data["Distance"].replace(0, distance.distance(tuple(coordinates), ), inplace=True)
     #data["Distance"] = distance.distance(tuple(coordinates), tuple(data["coordonnees_gps"].values[0].split(',')))
     #data["Distance"] = data.Nom_commune.apply(lambda x: distance.distance(tuple(coordinates), tuple(data["coordonnees_gps"].loc[data['Nom_commune'] == x].values[0].split(','))))
     data = data[data['coordonnees_gps'].notna()]
-    
+    #data["Distance"] = list(map(find_nearest, coordinates, data["coordonnees_gps"]))
     #data["Distance"] = str(data.applymap(distance.distance, args=((tuple(coordinates)), (tuple(coordinates2)))))
+
+    #data["Distance"] = distance.distance(coordinates, data.coordonnees_gps)
     start = time.time()
     #data["Distance"] = data.apply(lambda x: distance.distance(tuple(coordinates), tuple(x["coordonnees_gps"].split(','))), axis=1)
     #data["Distance"] = np.vectorize(distance.distance)(tuple(coordinates), tuple(data["coordonnees_gps"]))
     #data["Distance"] = list(map(distance.distance, coordinates, data["coordonnees_gps"]))
-    data["Distance"] = distance.distance(tuple(coordinates), tuple(data["coordonnees_gps"].values[0].split(',')))
+    
+    #data["Distance"] = np.where(data["coordonnees_gps"].notna(), distance.distance(tuple(coordinates), tuple(data["coordonnees_gps"].values[0].split(','))), 0)
+    #print(data["Distance"])
+ 
+    data["Distance"] = data["coordonnees_gps"].apply(lambda x: distance.distance(tuple(coordinates), x))
+    print(data["Distance"])
+    #print(tuple(data["coordonnees_gps"][0].split(',')))
     
     #print(tuple(data["coordonnees_gps"][3].split(',')))
     #condition = []
     #print(tuple	(coordinates))
     #output = [distance.distance(tuple(coordinates), tuple(data["coordonnees_gps"]))]
     #data["Distance"] = np.select(condition, output)
-    print(data["Distance"])
+    #print(data["Distance"])
     print(time.time() - start)
-"""
+
     start = time.time()
     #quickSort(data, 0, len(data) - 1)
     data = data.sort_values(by=['Distance'])
@@ -112,4 +129,4 @@ if __name__ == '__main__':
 
                 indexer = lexsort_indexer(keys, orders=ascending, na_position=na_position, key=key)
     print(f"Fin quicksort:",time.time() - start)
-    print(data.head(100))"""
+    print(data.head(100))

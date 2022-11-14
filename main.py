@@ -2,6 +2,7 @@ import pandas as pd
 from geopy import distance
 import numpy as np
 import time
+from sqlalchemy import create_engine
 
 def main():
     pass
@@ -58,5 +59,12 @@ if __name__ == '__main__':
     data.drop("coordonnees_gps", axis=1)
     data["Distance"] =  distance_calculate(data["Origin_lat"].astype(float), data['Origin_long'].astype(float), data['lat2'].astype(float), data['long2'].astype(float))
     #data["Distance"] = distance.distance((data['Origin_lat'], data['Origin_long']), (data['lat2'], data['long2']))
-    print(time.time() - start)
+    print(f"Time for ditance ",time.time() - start)
     print(data)
+
+    start = time.time()
+    engine = create_engine('sqlite://', echo=False)
+    data.to_sql('data', con=engine)
+    data = pd.read_sql_query("SELECT * FROM data ORDER BY Distance", engine)
+    print(data)
+    print(f"Time for sort ", time.time() - start)

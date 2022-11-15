@@ -3,6 +3,7 @@ from geopy import distance
 import numpy as np
 import time
 from sqlalchemy import create_engine
+import math
 
 def main():
     pass
@@ -66,5 +67,14 @@ if __name__ == '__main__':
     engine = create_engine('sqlite://', echo=False)
     data.to_sql('data', con=engine)
     data = pd.read_sql_query("SELECT * FROM data ORDER BY Distance", engine)
-    print(data)
     print(f"Time for sort ", time.time() - start)
+    
+
+    # Drop first row
+    data.drop(index=data.index[0], axis=0, inplace=True)
+    print(data)
+    print(f"{' '*15}min : {round(data['Distance'].min(), 2)} km pour {data['Nom_commune'].loc[data['Distance'] == data['Distance'].min()].values[0]} ({data['Code_postal'].loc[data['Distance'] == data['Distance'].min()].values[0]})")
+    print(f"{' '*2}Premier quartile : {round(data['Distance'].iloc[math.ceil(len(data)*0.25)], 2)} km pour {data['Nom_commune'].iloc[math.ceil(len(data)*0.25)]} ({data['Code_postal'].iloc[math.ceil(len(data)*0.25)]})")
+    print(f"{' '*11}Mediane : {round(data['Distance'].iloc[math.ceil(len(data)*0.5)], 2)} km pour {data['Nom_commune'].iloc[math.ceil(len(data)*0.5)]} ({data['Code_postal'].iloc[math.ceil(len(data)*0.5)]})")
+    print(f"troisième quartile : {round(data['Distance'].iloc[math.ceil(len(data)*0.75)], 2)} km pour {data['Nom_commune'].iloc[math.ceil(len(data)*0.75)]} ({data['Code_postal'].iloc[math.ceil(len(data)*0.75)]})")
+    print(f"{' '*15}max : {round(data['Distance'].max(), 2)} km pour {data['Nom_commune'].loc[data['Distance'] == data['Distance'].max()].values[0]} ({data['Code_postal'].loc[data['Distance'] == data['Distance'].max()].values[0]})")

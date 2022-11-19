@@ -1,5 +1,4 @@
 import pandas as pd
-from geopy import distance
 import numpy as np
 import time
 from sqlalchemy import create_engine
@@ -15,13 +14,15 @@ def import_data():
 def distance_calculate(org_lat, org_long, dest_lat, dest_long):
     org_lat, org_long, dest_lat, dest_long = map(np.radians, [org_lat, org_long, dest_lat, dest_long])
 
-    new_lat = dest_lat - org_lat
+    #new_lat = dest_lat - org_lat
     new_long = dest_long - org_long
 
-    haversine = np.sin(new_lat * 0.5) ** 2 + np.cos(org_lat) * np.cos(dest_lat) * np.sin(new_long * 0.5) ** 2
+    #geodesique = np.sin(new_lat * 0.5) ** 2 + np.cos(org_lat) * np.cos(dest_lat) * np.sin(new_long * 0.5) ** 2
+    geodesique = np.arccos(np.sin(org_lat)*np.sin(dest_lat)+np.cos(org_lat)*np.cos(dest_lat)*np.cos(new_long))
 
-    return 2 * np.arcsin(np.sqrt(haversine)) * 6371
+    #return 2 * np.arcsin(np.sqrt(geodesique)) * 6371
     #return org_lat + org_long + dest_lat + dest_long
+    return geodesique * 6378.137
 
 
 if __name__ == '__main__':
@@ -50,6 +51,7 @@ if __name__ == '__main__':
     data = data[data['coordonnees_gps'].notna()]
     data["Origin"] = coordinates.values[0]
     data[['Origin_lat', 'Origin_long']] = data['Origin'].str.split(',', n=1, expand=True)
+    data.drop(columns=['Origin'], axis=1)
     
     #data["Distance"] = str(data.applymap(distance.distance, args=((tuple(coordinates)), (tuple(coordinates2)))))
     start = time.time()
